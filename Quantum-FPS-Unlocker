@@ -1,0 +1,72 @@
+--[[
+    🚀 NAME: GALAXY FPS BOOST - MAXIMUM OVERDRIVE
+    👤 DEV: SPYDER MAN BAPAK
+    🛠️ FOCUS: FPS UNLOCK & ENGINE SPEEDUP
+--]]
+
+-- // 1. FPS LOADING PROCESS \\ --
+print("🚀 [FPS]: UNLOCKING ENGINE LIMITS...")
+task.wait(0.2)
+print("🚀 [FPS]: ACTIVATING FRAME-TIME SUPPRESSION...")
+
+-- // 2. FAST FLAGS (INTERNAL ENGINE SPEED) \\ --
+if setfflag then
+    -- Unlock FPS & Target
+    setfflag("FFlagGameBasicSettingsFramerateCap", "false")
+    setfflag("DFIntTaskSchedulerTargetFps", "999") -- Paksa target FPS setinggi mungkin
+    
+    -- Speed Up Rendering
+    setfflag("FIntFRMMinFrameTime", "0") -- Hapus delay antar frame (Zero Latency)
+    setfflag("FFlagRenderFixLowFpsCrashes", "true")
+    setfflag("FFlagRenderEnableFrustumCullingV2", "true") -- Jangan render yang gak kelihatan
+    
+    -- CPU Priority
+    setfflag("FFlagTaskSchedulerHighPriority", "true") -- Prioritaskan Roblox di sistem Android
+    
+    -- Lighting & Shadow (FPS Killer)
+    setfflag("FFlagDebugDisableShadowCascades", "true")
+    setfflag("FIntRenderShadowmapDetail", "0")
+    setfflag("FIntRenderShadowmapBias", "0")
+end
+
+-- // 3. RENDER SETTINGS (FPS OPTIMIZATION) \\ --
+local Settings = settings()
+Settings.Rendering.QualityLevel = 1
+Settings.Rendering.MeshPartDetailLevel = Enum.MeshPartDetailLevel.Level0
+
+-- Force Set FPS Cap (Khusus Executor Delta)
+if setfpscap then
+    setfpscap(999)
+end
+
+-- // 4. AGGRESSIVE FRAME-RATE CLEANER \\ --
+-- Mematikan fitur visual yang paling sering bikin FPS drop (Drop Frame)
+local function BoostFPS()
+    for _, v in pairs(game:GetDescendants()) do
+        if v:IsA("PostProcessEffect") or v:IsA("BloomEffect") or v:IsA("BlurEffect") or v:IsA("SunRaysEffect") then
+            v.Enabled = false -- Matikan semua efek pasca-proses
+        elseif v:IsA("Clouds") then
+            v:Destroy() -- Awan itu berat, hapus saja
+        elseif v:IsA("Decal") or v:IsA("Texture") then
+            v.Transparency = 1 -- Sembunyiin stiker yang nempel di lantai/dinding
+        end
+    end
+    
+    -- Matikan Fog (Kabut) biar Draw Distance ringan
+    game:GetService("Lighting").FogEnd = 9e9
+    game:GetService("Lighting").GlobalShadows = false
+end
+
+-- Jalankan Boost
+BoostFPS()
+
+-- // 5. FPS REFRESHER LOOP \\ --
+task.spawn(function()
+    while task.wait(10) do
+        -- Pastikan FPS Cap tetap di angka dewa
+        if setfpscap then setfpscap(999) end
+        collectgarbage("step")
+    end
+end)
+
+print("⚡ STATUS: FPS MAXIMUM OVERDRIVE ACTIVE! ⚡")
